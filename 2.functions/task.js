@@ -1,35 +1,30 @@
-/*function getArrayParams(...arr) {
-	for (let i; i in [...arr]; i++) {
-		let min = Infinity;
-		let max = -Infinity;
-		let avg = min + max;
-		if (i < min) {
-			min = i;
-		} else {
-			max = i;
-		}
-	}
+function getArrayParams(...arr) {
+	min = Math.min(...arr);
+	max = Math.max(...arr);
+	srt = (arr.reduce(function(a, b) {
+		return a + b;
+	}) / arr.length);
+	avg = Number(srt.toFixed(2));
 	return {
 		min: min,
 		max: max,
 		avg: avg
 	};
-}*/
-function getArrayParams(...arr) {
-	let min = Math.min(...arr);
-  let max = Math.max(...arr);
-  let avg = max + min;
-  return { min : min,
-           max : max,
-           avg : avg }
-} 
+}
+
+
 
 function summElementsWorker(...arr) {
-	sum = arr.reduce(function(a, b) {
-		return a + b;
-	});
-	return sum;
+	if (arr.length != 0) {
+		sum = arr.reduce(function(a, b) {
+			return a + b;
+		});
+		return sum;
+	} else {
+		return 0
+	}
 }
+
 
 function differenceMaxMinWorker(...arr) {
 	min = Math.min(...arr);
