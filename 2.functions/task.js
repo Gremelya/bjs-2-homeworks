@@ -64,20 +64,19 @@ function averageEvenElementsWorker(...arr) {
 	sumEven = even.reduce(function(a, b) {
 		return a + b
 	});
-	return sumEven / (arr.length);
+	return sumEven / even.length;
 }
 
-/*/function makeWork (arrOfArr, func) {
-  let maxWorkerResult = -Infinity;
-  for (let i = 0;i < arrOfarr.length;i++){
-    arr = arrOfArr[i]
-    conconst = func(arr);
-  }
-  if (conconst >maxWorkerResult){
-    maxWorkerResult = conconst;
-  }
-  return maxWorkerResult;
-}
+function makeWork(arrOfArr, func) {
+	let maxWorkerResult = -Infinity;
+	let conconst = 0;
+	for (let i = 0; i < arr.length; i++) {
+		arrOfArr = arr[i]
+		conconst = func(...arrOfArr);
+		if (conconst >= maxWorkerResult) {
+			maxWorkerResult = conconst;
+		}
+	}
 
-const arrOfArr = [[10, 10, 11, 20, 10], [67, 10, 2, 39, 88], [72, 75, 51, 87, 43], [30, 41, 55, 96, 62]];
-console.log(makeWork(arr, summElementsWorker))/*/
+	return maxWorkerResult;
+}
