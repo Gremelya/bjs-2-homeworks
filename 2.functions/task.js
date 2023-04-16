@@ -1,9 +1,9 @@
 function getArrayParams(...arr) {
 	min = Math.min(...arr);
 	max = Math.max(...arr);
-	let initValue = 0;
+
 	sum = (arr.reduce(function(a, b) {
-		return a + b, initValue;
+		return a + b;
 	}) / arr.length);
 	avg = Number(sum.toFixed(2));
 	return {
@@ -63,6 +63,7 @@ function differenceEvenOddWorker(...arr) {
 		return 0;
 	}
 }
+
 
 function averageEvenElementsWorker(...arr) {
 	if (arr != '') {
