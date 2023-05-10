@@ -1,112 +1,61 @@
 class AlarmClock {
-    constructor(){
+    constructor() {
         this.alarmCollection = [];
-        this.timerId = null;
+        this.intervalId = null;
     }
 
-    getCurrentFormattedTime() {
-        const date = new Date();
-        let hours = date.getHours();
-        if (hours < 10) {
-            hours = "0" + hours
-        };
-        let minutes = date.getMinutes();
-        if (minutes < 10) {
-            minutes = "0" + minutes
-        };
-        return `${hours}:${minutes}`;
+    addClock(time, callback) {
+        if (time === null || callback === undefined) {
+            throw new Error('Отсутствуют обязательные аргументы');
+        } 
+        
+        if (this.alarmCollection.some((elem) => elem.time === time)) {
+            console.warn('Уже присутствует звонок на это же время');
+        } 
+        
+        this.alarmCollection.push({callback, time, canCall: true});
     }
 
-    checkClock(alarm) {
-        if (alarm.time === this.getCurrentFormattedTime()) {
-            alarm.callback();
-        }
+    removeClock(time) {
+        this.alarmCollection = this.alarmCollection.filter((elem) => elem.time !== time);
     }
 
-    addClock(time, callback, id = null) {
-        if (id === null) {
-            throw new Error("Передайте идентификатор звонка");
-        }
-        if (this.alarmCollection.some((x) => (x.id === id))) {
-            console.log("Такой звонок уже существует");            
-        } else {
-            this.alarmCollection.push({id, time, callback});
-        }
-    };
-
-    removeClock(id) {
-        let index = this.alarmCollection.findIndex((elem) => elem.id === id);   
-        if (index === -1) {
-            return false;
-        }
-        this.alarmCollection.splice(index, 1);
-        return true;
+getCurrentFormattedTime() {
+        const now = new Date().toLocaleTimeString("ru-Ru", {
+          hour: 'numeric', minute: 'numeric'
+        });
+        return now;
     }
 
     start() {
-        if (this.timerId === null) {
-            this.timerId = setInterval(() => {
-                this.alarmCollection.forEach((x) => {
-                    this.checkClock(x);                    
-                })
-            }, 100);
+        if (this.intervalId !== null) {
+            return;
         }
+
+        function asyncFunction() {
+            this.alarmCollection.forEach(elem => {
+                if (elem.time === this.getCurrentFormattedTime() && elem.canCall === true) {
+                    elem.canCall = false;
+                    elem.callback();
+                }
+            });
+        }
+
+        const bindedFunc = asyncFunction.bind(this);
+        this.intervalId = setInterval(bindedFunc);
     }
 
     stop() {
-        if (this.timerId != null) {
-            clearInterval(this.timerId);
-            this.timerId = null;
-        }
+        clearInterval(this.intervalId);
+        this.intervalId = null;
     }
 
-    printAlarms(){
-        this.alarmCollection.forEach((x) => {
-            console.log(x.id, " ", x.time);
-        })
+    resetAllCalls() {
+        this.alarmCollection.forEach((elem) => elem.canCall = true);
     }
 
-    clearAlarms(){
-        this.alarmCollection.splice(0, this.alarmCollection.length);
-        console.log("все удалены: ");
-        console.table(this.alarmCollection);
+    clearAlarms() {
+        this.stop();
+        this.alarmCollection = [];
     }
 }
-
-function testCase() {
-    let alarmSet = new AlarmClock;
-
-    let currentDate = new Date();
-    let hours = currentDate.getHours();
-    if (hours < 10) {hours = "0" + hours};
-    let minutes = currentDate.getMinutes();
-    if (minutes < 10) {minutes = "0" + minutes};
-    
-    alarmSet.addClock(
-        `${hours < 10? "0" + hours: hours}:${minutes < 10? "0" + minutes: minutes}`, () => {
-            console.log("выполнилась несколько раз");
-        }, "alarm_1");
-
-    minutes++;
-
-    alarmSet.addClock(
-        `${hours < 10? "0" + hours: hours}:${minutes < 10? "0" + minutes: minutes}`, () => {
-            console.log("выполнилась один раз, а потом удалилась")        
-            alarmSet.removeClock("alarm_2");
-    }, "alarm_2");
-
-    minutes++;
-
-    alarmSet.addClock(
-        `${hours < 10? "0" + hours: hours}:${minutes < 10? "0" + minutes: minutes}`, () => {
-            console.log("выполнилась один раз, потом остановился интервал, все звонки очистились, и ничего не вывелось");
-            alarmSet.stop();
-            alarmSet.clearAlarms();
-            alarmSet.printAlarms();
-    }, "alarm_3");
-
-    alarmSet.printAlarms();
-    alarmSet.start();
-
-}
-
