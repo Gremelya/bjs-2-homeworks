@@ -1,76 +1,112 @@
-'use strict';
-
 class AlarmClock {
-    constructor() {
+    constructor(){
         this.alarmCollection = [];
         this.timerId = null;
-    };
+    }
 
-    addClock(time, func, id) {
-        if (!id) throw new Error('Параметр id не передан');
-        if (this.alarmCollection.some(item => item.id === id)) {
-            console.error(`Звонок с данным id ${id} уже существует!`);
-            return;
+    getCurrentFormattedTime() {
+        const date = new Date();
+        let hours = date.getHours();
+        if (hours < 10) {
+            hours = "0" + hours
+        };
+        let minutes = date.getMinutes();
+        if (minutes < 10) {
+            minutes = "0" + minutes
+        };
+        return `${hours}:${minutes}`;
+    }
+
+    checkClock(alarm) {
+        if (alarm.time === this.getCurrentFormattedTime()) {
+            alarm.callback();
         }
-        this.alarmCollection.push({ id, time, func });
+    }
+
+    addClock(time, callback, id = null) {
+        if (id === null) {
+            throw new Error("Передайте идентификатор звонка");
+        }
+        if (this.alarmCollection.some((x) => (x.id === id))) {
+            console.log("Такой звонок уже существует");            
+        } else {
+            this.alarmCollection.push({id, time, callback});
+        }
     };
 
     removeClock(id) {
-        let arrLength1 = this.alarmCollection.length;
-        this.alarmCollection = this.alarmCollection.filter(item => item.id !== id);
-        let arrLength2 = this.alarmCollection.length;
-        return arrLength1 === arrLength2;
-
-    };
-
-    getCurrentFormattedTime(_time) {
-        const currentDate = _time ? _time : new Date();
-        const hours = currentDate.getHours() < 10 ? `0${currentDate.getHours()}` : `${currentDate.getHours()}`;
-        const minutes = currentDate.getMinutes() < 10 ? `0${currentDate.getMinutes()}` : `${currentDate.getMinutes()}`;
-        return `${hours}:${minutes}`;
-    };
+        let index = this.alarmCollection.findIndex((elem) => elem.id === id);   
+        if (index === -1) {
+            return false;
+        }
+        this.alarmCollection.splice(index, 1);
+        return true;
+    }
 
     start() {
-        let checkAlarm = checkClock.bind(this);
-        function checkClock(alarm) {
-            if (alarm.time === this.getCurrentFormattedTime()) alarm.func();
+        if (this.timerId === null) {
+            this.timerId = setInterval(() => {
+                this.alarmCollection.forEach((x) => {
+                    this.checkClock(x);                    
+                })
+            }, 100);
         }
-        if (!this.timerId) this.timerId = setInterval(() => this.alarmCollection.forEach(item => checkAlarm(item)),
-            1000);
-    };
+    }
 
     stop() {
-        if (this.timerId) {
+        if (this.timerId != null) {
             clearInterval(this.timerId);
             this.timerId = null;
         }
-    };
+    }
 
-    printAlarms() {
-        this.alarmCollection.forEach(item => console.log(`id = ${item.id} time = ${item.time}`));
-    };
+    printAlarms(){
+        this.alarmCollection.forEach((x) => {
+            console.log(x.id, " ", x.time);
+        })
+    }
 
-    clearAlarms() {
-        this.stop();
-        this.alarmCollection = [];
-    };
+    clearAlarms(){
+        this.alarmCollection.splice(0, this.alarmCollection.length);
+        console.log("все удалены: ");
+        console.table(this.alarmCollection);
+    }
 }
 
+function testCase() {
+    let alarmSet = new AlarmClock;
 
-
-
-function alarm() {
-    let clock = new AlarmClock();
-    clock.addClock(clock.getCurrentFormattedTime(), () => console.log('Пора вставать!'), 55);
     let currentDate = new Date();
-    currentDate.setMinutes(currentDate.getMinutes() + 1);
-    clock.addClock(clock.getCurrentFormattedTime(currentDate), () => { console.log('Давно пора вставать!'); clock.removeClock(215) }, 215);
-    currentDate = new Date();
-    currentDate.setMinutes(currentDate.getMinutes() + 2);
-    clock.addClock(clock.getCurrentFormattedTime(currentDate),
-        () => { console.log('Давным-давно уже пора встать!'); clock.stop(); clock.clearAlarms() }, 2785);
-    clock.printAlarms();
-    clock.start();
+    let hours = currentDate.getHours();
+    if (hours < 10) {hours = "0" + hours};
+    let minutes = currentDate.getMinutes();
+    if (minutes < 10) {minutes = "0" + minutes};
+    
+    alarmSet.addClock(
+        `${hours < 10? "0" + hours: hours}:${minutes < 10? "0" + minutes: minutes}`, () => {
+            console.log("выполнилась несколько раз");
+        }, "alarm_1");
+
+    minutes++;
+
+    alarmSet.addClock(
+        `${hours < 10? "0" + hours: hours}:${minutes < 10? "0" + minutes: minutes}`, () => {
+            console.log("выполнилась один раз, а потом удалилась")        
+            alarmSet.removeClock("alarm_2");
+    }, "alarm_2");
+
+    minutes++;
+
+    alarmSet.addClock(
+        `${hours < 10? "0" + hours: hours}:${minutes < 10? "0" + minutes: minutes}`, () => {
+            console.log("выполнилась один раз, потом остановился интервал, все звонки очистились, и ничего не вывелось");
+            alarmSet.stop();
+            alarmSet.clearAlarms();
+            alarmSet.printAlarms();
+    }, "alarm_3");
+
+    alarmSet.printAlarms();
+    alarmSet.start();
+
 }
 
-alarm();
