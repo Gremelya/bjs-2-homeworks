@@ -1,60 +1,49 @@
+//Задача № 1
+
+
 function cachingDecoratorNew(func) {
-    let cache = [];
-  
-    function wrapper(...args) {
-      const hash = args.join(',');
-      let result = cache.find(item => item.hash === hash);
-      if (result) {
-        console.log("Из кэша: " + result.value);
-        return "Из кэша: " + result.value;
-      } else {
-        let value = func.call(this, ...args);
-        if (cache.length > 5) {
-          cache.shift();
-        }
-        cache.push({ hash, value });
-        console.log("Вычисляем: " + value);
-        return "Вычисляем: " + value;
-      }
-    }
-    return wrapper;
+  let cache = [];
+
+function wrapper(...args) {
+  const hash = args.join(','); 
+  let objectInCache = cache.find((item) => item.hash === hash); 
+  if (objectInCache) { 
+      console.log("Из кэша: " + objectInCache.result); 
+      return "Из кэша: " + objectInCache.result;
   }
-  
-  
-  function debounceDecoratorNew(func, ms) {
-    let nextCall = true;
-    let interval;
-  
-    function wrapper(...args) {
-      if (nextCall) {
-        func.apply(this, ...args);
-        nextCall = false;
-      }
-      clearTimeout(interval);
-      interval = setTimeout(() => {
-        func.apply(this, ...args);
-        nextCall = true;
-      }, ms)
-    }
-    return wrapper;
+
+  let result = func(...args); 
+  cache.push({
+      hash, result
+  }) ; 
+  if (cache.length > 5) { 
+    cache.shift() 
   }
-  
-  function debounceDecorator2(func, ms) {
-    let nextCall = true;
-    let interval;
-    wrapper.count = 0;
-  
-    function wrapper(...args) {
-      wrapper.count++;
-      if (nextCall) {
-        func.apply(this, ...args);
-        nextCall = false;
-      }
-      clearTimeout(interval);
-      interval = setTimeout(() => {
-        func.apply(this, ...args);
-        nextCall = true;
-      }, ms)
+  console.log("Вычисляем: " + result);
+  return "Вычисляем: " + result;  
+}
+return wrapper;
+}
+
+
+//Задача № 2
+function debounceDecoratorNew(func, delay) {
+  let timeoutId = null;
+  function wrapper(...args) {
+    wrapper.allCount += 1;
+    if(timeoutId){
+      clearInterval(timeoutId);
     }
-    return wrapper;
+    if (timeoutId === null) {
+       wrapper.count += 1;
+       func(...args);
+    }
+    timeoutId = setTimeout(() => {
+       wrapper.count += 1;
+       func(...args);
+    }, delay);
   }
+  wrapper.count = 0;
+  wrapper.allCount = 0;
+  return wrapper;
+}
