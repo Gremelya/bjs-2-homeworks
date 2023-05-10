@@ -1,83 +1,48 @@
 ﻿'use strict';
 
-class PrintEditionItem {
-    constructor(name, releaseDate, pagesCount) {
-        this.name = name;
-        this.releaseDate = releaseDate;
-        this.pagesCount = pagesCount;
+function parseCount(value) {
+    let result = Number.parseInt(value);
+    if (isNaN(result)) {
+        throw new Error("Невалидное значение");
     }
+    return result;
+}
 
-    type = null;
-
-    fix() {
-        this.state *= 1.5;
-    }
-
-    set state(num) {
-        if (num >= 100) {
-            num = 100;
-        } else if (num <= 0) {
-            num = 0;
-        }
-        this._state = num;
-    }
-
-    get state() {
-        if (this._state === undefined) {
-            this._state = 100;
-        }
-        return this._state;
+function validateCount(value) {
+    try {
+        return parseCount(value);
+    } catch (err) {
+        return err;
     }
 }
 
-class Magazine extends PrintEditionItem {
-    type = 'magazine';
-}
+class Triangle {
+    constructor(a, b, c) {
+        this.a = a;
+        this.b = b;
+        this.c = c;
 
-class Book extends PrintEditionItem {
-    constructor(author, name, releaseDate, pagesCount) {
-        super(name, releaseDate, pagesCount);
-        this.author = author;
-    }
-    type = 'book';
-}
-
-class NovelBook extends Book {
-    type = 'novel';
-}
-
-class FantasticBook extends Book {
-    type = 'fantastic';
-}
-
-class DetectiveBook extends Book {
-    type = 'detective';
-}
-
-class Library {
-    constructor(name) {
-        this.name = name;
-    }
-    books = [];
-
-    addBook(book) {
-        if (book.state > 30) {
-            this.books.push(book);
+        if (a + b < c || a + c < b || c + b < a) {
+            throw new Error("Треугольник с такими сторонами не существует");
         }
     }
-
-    findBookBy(type, value) {
-        let searchingBook;
-        this.books.find(book => book[type] === value ? searchingBook = book : searchingBook = null);
-        return searchingBook;
+    getPerimeter() {
+        return this.a + this.b + this.c;
     }
+    getArea() {
+        const p = this.getPerimeter() / 2;
+        const area = Math.sqrt(p * (p - this.a) * (p - this.b) * (p - this.c));
+        return Number(area.toFixed(3));
+    }
+}
 
-    giveBookByName(bookName) {
-        let givingBook = this.books.find(book => book.name === bookName);
-        if (givingBook === undefined) {
-            givingBook = null;
+function getTriangle(a, b, c) {
+    try {
+        return new Triangle(a, b, c);
+    } catch {
+        return {
+            getPerimeter: () => "Ошибка! Треугольник не существует",
+            getArea: () => "Ошибка! Треугольник не существует"
         }
-        this.books = this.books.filter(book => book.name !== bookName);
-        return givingBook;
     }
 }
